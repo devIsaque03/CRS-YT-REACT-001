@@ -1,23 +1,46 @@
+import { useEffect, useState, useRef } from 'react'
 import './style.css'
 import Trash from '../../assets/trash.svg'
+import api from '../../services/api'
 
 function Home() {
+  const [users, setUsers] = useState([]) // muda o estado da variável
 
-  // simulando um banco de dados
-  const users = [
-    {
-      id: '12342135215',
-      name: 'Rodolfo',
-      age: '33',
-      email: 'rodolfo@gmail.com'
-    },
-    {
-      id: '124512341244',
-      name: 'marta',
-      age: '49',
-      email: 'madalena@gmail.com'
-    }
-  ]
+  // pegando o valor dos input usando 'ref'
+  const inputName = useRef()
+  const inputAge = useRef()
+  const inputEmail = useRef()
+
+  // Função que pega usuário do banco de dados
+  async function getUsers(){
+    const usersFromApi = await api.get('/users')
+
+    setUsers(usersFromApi.data)
+  }
+
+  // Função que cria novo usuário
+  async function createUsers(){
+
+    await api.post('/users', {
+      name: inputName.current.value,
+      age: inputAge.current.value,
+      email: inputEmail.current.value
+    })
+
+    getUsers()
+  }
+
+  // Função que deleta um usuário
+  async function deleteUsers(id){
+    await api.delete(`/users/${id}`)
+
+    getUsers()
+  }
+
+  // chama a função assim que inicia o site
+  useEffect(() => {
+    getUsers()
+  }, );
  
   // HTML
   return (
@@ -27,10 +50,10 @@ function Home() {
       {/* Formulario de cadastro */}
       <form>
         <h1>Cadastro de Usuários</h1>
-        <input placeholder="nome" name='nome' type='text'></input>
-        <input placeholder="idade" name='idade' type='number'></input>
-        <input placeholder="email" name='email' type='email'></input>
-        <button type='button'>Cadastrar</button>
+        <input placeholder="nome" name='nome' type='text' ref={inputName}></input>
+        <input placeholder="idade" name='idade' type='number' ref={inputAge}></input>
+        <input placeholder="email" name='email' type='email' ref={inputEmail}></input>
+        <button type='button' onClick={createUsers}>Cadastrar</button>
       </form>
 
       {/*Usando JavaScript para percorrer todos usuários e chamar função */}
@@ -44,7 +67,7 @@ function Home() {
             <p>Idade: <span>{user.age}</span></p>
             <p>Email: <span>{user.email}</span></p>
           </div>
-          <button>
+          <button onClick={() => deleteUsers(user.id)}>
             <img src={Trash} height=" 30 px"/>
           </button>
 
